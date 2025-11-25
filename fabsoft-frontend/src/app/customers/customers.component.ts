@@ -5,6 +5,7 @@ import { CustomerService } from '../service/customer.service';
 import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-customers',
@@ -21,7 +22,11 @@ export class CustomersComponent {
   sortDirection: 'asc' | 'desc' = 'asc';
   isLoading: boolean = false;
 
-  constructor(private customerService: CustomerService, private router: Router) { }
+  constructor(
+    private customerService: CustomerService,
+    private router: Router,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -141,5 +146,10 @@ export class CustomersComponent {
 
   getFemaleCount(): number {
     return this.customerList.filter(c => c.gender === 'Female').length;
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }

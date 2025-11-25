@@ -3,12 +3,13 @@ import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../service/customer.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CustomerModel } from '../model/customer';
 import { NewTrainingPlan, TrainingPlanModel } from '../model/training-plan';
 import { TrainingPlanService } from '../service/training-plan.service';
 import { ExerciseModel } from '../model/exercise';
 import { ExerciseService } from '../service/exercise.service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-customer',
@@ -44,7 +45,9 @@ export class CustomerComponent implements OnInit {
     private customerService: CustomerService,
     private trainingPlanService: TrainingPlanService,
     private exerciseService: ExerciseService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -137,7 +140,7 @@ export class CustomerComponent implements OnInit {
   }
 
   getExerciseDaysLabel(days: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: { [key: string]: string; } = {
       'THREE_DAYS': '3 Days per Week - Beginner',
       'FOUR_DAYS': '4 Days per Week - Intermediate',
       'FIVE_DAYS': '5 Days per Week - Advanced',
@@ -205,7 +208,7 @@ export class CustomerComponent implements OnInit {
       console.error('Plan name is required');
       return;
     }
-    console.log(this.newPlan)
+    console.log(this.newPlan);
     this.trainingPlanService.createTrainingPlan(this.newPlan).subscribe({
       next: () => {
         this.showNewPlan = false;
@@ -230,5 +233,10 @@ export class CustomerComponent implements OnInit {
         console.error('Error deleting training plan:', error);
       }
     });
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 }

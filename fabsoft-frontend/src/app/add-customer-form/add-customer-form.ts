@@ -90,4 +90,9 @@ export class AddCustomerFormComponent {
       this.router.navigate(['/customers']);
     }
   }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
+  }
 }

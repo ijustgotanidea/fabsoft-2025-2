@@ -11,9 +11,14 @@
         </ol>
       </nav>
     </div>
-    <button class="btn btn-outline-secondary" routerLink="/customers">
-      <i class="bi bi-arrow-left me-2"></i>Back to List
-    </button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" routerLink="/customers">
+        <i class="bi bi-arrow-left me-2"></i>Back to List
+      </button>
+      <button class="btn btn-outline-danger" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </button>
+    </div>
   </div>
 
   <div class="card shadow-sm mb-4">
