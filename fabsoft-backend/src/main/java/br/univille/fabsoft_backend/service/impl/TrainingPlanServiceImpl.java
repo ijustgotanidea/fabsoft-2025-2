@@ -77,7 +77,20 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
         TrainingPlan plan = new TrainingPlan();
         plan.setCustomer(customer);
         plan.setPlanName(trainingPlanDTO != null ? trainingPlanDTO.getPlanName() : "New Training Plan");
-        plan.setExercises(new ArrayList<>());
+
+        List<Exercise> exercises = new ArrayList<>();
+        if (trainingPlanDTO != null && trainingPlanDTO.getExercises() != null) {
+            for (ExerciseDTO exerciseDTO : trainingPlanDTO.getExercises()) {
+                Exercise exercise = exerciseRepository.findById(exerciseDTO.getId())
+                    .orElse(null);
+                if (exercise != null) {
+                    exercises.add(exercise);
+                }
+            }
+        }
+
+        plan.setExercises(exercises);
+
         trainingPlanRepository.save(plan);
         return convertToDTO(plan);
     }
