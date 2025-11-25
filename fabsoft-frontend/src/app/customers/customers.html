@@ -1,31 +1,228 @@
-<main class="container mt-5">
-  <h2 class="mb-4">Customer List</h2>
-  <button class="btn btn-primary mb-3" (click)="addCustomer()">Add Customer</button>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Age</th>
-        <th>Weight</th>
-        <th>Height</th>
-        <th>Gender</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (customer of customerList; track customer) {
-      <tr>
-        <td>{{customer.name}}</td>
-        <td>{{customer.age}}</td>
-        <td>{{customer.weight}}</td>
-        <td>{{customer.height}}</td>
-        <td>{{customer.gender}}</td>
-        <td>
-          <button class="btn btn-sm btn-warning me-2" (click)="editCustomer(customer.id)">Edit</button>
-          <button class="btn btn-sm btn-danger" (click)="deleteCustomer(customer.id)">Delete</button>
-        </td>
-      </tr>
+<main class="container-fluid py-4">
+  <!-- Header Section -->
+  <div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="h2 mb-1">
+          <i class="bi bi-people-fill me-2"></i>Customer Management
+        </h1>
+        <p class="text-muted mb-0">Manage your fitness center customers</p>
+      </div>
+      <button class="btn btn-primary btn-lg" (click)="addCustomer()">
+        <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ customerList.length }}</div>
+          <div class="stat-label">Total Customers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-success">
+          <i class="bi bi-search"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ filteredCustomers.length }}</div>
+          <div class="stat-label">Filtered Results</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-info">
+          <i class="bi bi-gender-male"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getMaleCount() }}</div>
+          <div class="stat-label">Male Customers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning">
+          <i class="bi bi-gender-female"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ getFemaleCount() }}</div>
+          <div class="stat-label">Female Customers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-6">
+          <input type="text" class="form-control border-start-0" placeholder="Search by name or gender..."
+            [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()">
+          <button class="btn btn-outline-secondary" type="button" *ngIf="searchTerm"
+            (click)="searchTerm = ''; onSearchChange()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <div class="d-inline-flex align-items-center gap-2">
+            <span class="text-muted small">
+              <i class="bi bi-funnel me-1"></i>
+              Showing {{ filteredCustomers.length }} of {{ customerList.length }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      @if (isLoading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted">Loading customers...</p>
+      </div>
       }
-    </tbody>
-  </table>
+
+      <!-- Empty State -->
+      @else if (filteredCustomers.length === 0 && !searchTerm) {
+      <div class="empty-state text-center py-5">
+        <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+        <h3 class="h5 text-muted mb-2">No Customers Yet</h3>
+        <p class="text-muted mb-4">Start by adding your first customer to the system</p>
+        <button class="btn btn-primary" (click)="addCustomer()">
+          <i class="bi bi-person-plus-fill me-2"></i>Add First Customer
+        </button>
+      </div>
+      }
+
+      <!-- No Search Results -->
+      @else if (filteredCustomers.length === 0 && searchTerm) {
+      <div class="empty-state text-center py-5">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h3 class="h5 text-muted mb-2">No Results Found</h3>
+        <p class="text-muted mb-3">No customers match your search criteria: "{{ searchTerm }}"</p>
+        <button class="btn btn-outline-secondary" (click)="searchTerm = ''; onSearchChange()">
+          <i class="bi bi-x-circle me-2"></i>Clear Search
+        </button>
+      </div>
+      }
+
+      <!-- Customer Table -->
+      @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" (click)="sortBy('name')">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span>Name</span>
+                  <i class="bi" [ngClass]="getSortIcon('name')"></i>
+                </div>
+              </th>
+              <th class="sortable" (click)="sortBy('age')">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span>Age</span>
+                  <i class="bi" [ngClass]="getSortIcon('age')"></i>
+                </div>
+              </th>
+              <th class="sortable" (click)="sortBy('weight')">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span>Weight (kg)</span>
+                  <i class="bi" [ngClass]="getSortIcon('weight')"></i>
+                </div>
+              </th>
+              <th class="sortable" (click)="sortBy('height')">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span>Height (cm)</span>
+                  <i class="bi" [ngClass]="getSortIcon('height')"></i>
+                </div>
+              </th>
+              <th>BMI</th>
+              <th class="sortable" (click)="sortBy('gender')">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span>Gender</span>
+                  <i class="bi" [ngClass]="getSortIcon('gender')"></i>
+                </div>
+              </th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (customer of filteredCustomers; track customer.id) {
+            <tr class="customer-row">
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar me-3">
+                    <i class="bi" [ngClass]="customer.gender === 'Male' ? 'bi-person-fill' : 'bi-person-fill'"></i>
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ customer.name }}</div>
+                    <div class="text-muted small">ID: {{ customer.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ customer.age }} years</span>
+              </td>
+              <td>{{ customer.weight | number:'1.1-1' }} kg</td>
+              <td>{{ customer.height | number:'1.0-0' }} cm</td>
+              <td>
+                <span [ngClass]="getBMIClass(calculateBMI(customer))">
+                  {{ calculateBMI(customer) | number:'1.1-1' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="customer.gender === 'Male' ? 'bg-info' : 'bg-warning'">
+                  <i class="bi me-1" [ngClass]="customer.gender === 'Male' ? 'bi-gender-male' : 'bi-gender-female'"></i>
+                  {{ customer.gender }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex gap-2 justify-content-center">
+                  <button class="btn btn-sm btn-outline-primary" (click)="editCustomer(customer.id)"
+                    title="View/Edit customer">
+                    Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(customer)"
+                    title="Delete customer">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    @if (filteredCustomers.length > 0) {
+    <div class="card-footer bg-light text-muted small">
+      <div class="d-flex justify-content-between align-items-center">
+        <span>
+          <i class="bi bi-info-circle me-1"></i>
+          Click column headers to sort
+        </span>
+        <span>
+          Total: {{ filteredCustomers.length }} customer{{ filteredCustomers.length !== 1 ? 's' : '' }}
+        </span>
+      </div>
+    </div>
+    }
+  </div>
 </main>
