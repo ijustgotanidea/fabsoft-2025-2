@@ -205,7 +205,7 @@ export class CustomerComponent implements OnInit {
       console.error('Plan name is required');
       return;
     }
-
+    console.log(this.newPlan)
     this.trainingPlanService.createTrainingPlan(this.newPlan).subscribe({
       next: () => {
         this.showNewPlan = false;

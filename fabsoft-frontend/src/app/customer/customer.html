@@ -1,113 +1,298 @@
-<div class="container mt-4">
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-      <h2 class="mb-0">Customer Information</h2>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">
+        <i class="bi bi-person-badge me-2"></i>{{ customer.name || 'Customer Profile' }}
+      </h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/customers">Customers</a></li>
+          <li class="breadcrumb-item active">Profile</li>
+        </ol>
+      </nav>
     </div>
-    <div class="card-body">
-      <div class="row g-3">
+    <button class="btn btn-outline-secondary" routerLink="/customers">
+      <i class="bi bi-arrow-left me-2"></i>Back to List
+    </button>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-gradient-primary text-white py-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Customer Information</h2>
+        <div class="btn-group" role="group">
+          <button class="btn btn-sm" [ngClass]="isEditing ? 'btn-light' : 'btn-outline-light'" (click)="toggleEdit()"
+            [disabled]="isSaving">
+            <i class="bi me-2" [ngClass]="isEditing ? 'bi-check-circle' : 'bi-pencil-square'"></i>
+            <span *ngIf="!isSaving">{{ isEditing ? 'Save Changes' : 'Edit Profile' }}</span>
+            <span *ngIf="isSaving">
+              <span class="spinner-border spinner-border-sm me-2"></span>Saving...
+            </span>
+          </button>
+          <button *ngIf="isEditing" class="btn btn-sm btn-outline-light" (click)="cancelEdit()" [disabled]="isSaving">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-4">
         <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">Name:</label>
-            <input class="form-control" [(ngModel)]="customer.name" [disabled]="!isEditing">
-          </div>
-          <div class="form-group mt-3">
-            <label class="form-label">Age:</label>
-            <input type="number" class="form-control" [(ngModel)]="customer.age" name="age" [disabled]="!isEditing"
-              min="0">
-          </div>
-          <div class="form-group mt-3">
-            <label class="form-label">Weight (kg):</label>
-            <input type="number" class="form-control" [(ngModel)]="customer.weight" name="weight"
-              [disabled]="!isEditing" min="0" step="0.1">
-          </div>
-          <div class="form-group mt-3">
-            <label class="form-label">Height (cm):</label>
-            <input type="number" class="form-control" [(ngModel)]="customer.height" name="height"
-              [disabled]="!isEditing" min="0" step="0.1">
+          <div class="info-section">
+            <h6 class="text-muted text-uppercase small mb-3">
+              <i class="bi bi-info-circle me-2"></i>Personal Details
+            </h6>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Full Name</label>
+              <input class="form-control" [(ngModel)]="customer.name" [disabled]="!isEditing"
+                placeholder="Enter full name">
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Age</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" [(ngModel)]="customer.age" [disabled]="!isEditing" min="12"
+                    max="120" (ngModelChange)="calculateBMI()">
+                  <span class="input-group-text">years</span>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Gender</label>
+                <input class="form-control" [value]="customer.gender" disabled>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Training Frequency</label>
+              <input class="form-control" [value]="getExerciseDaysLabel(customer.exerciseDays)" disabled>
+            </div>
           </div>
         </div>
+
+        <div class="col-md-6">
+          <div class="info-section">
+            <h6 class="text-muted text-uppercase small mb-3">
+              <i class="bi bi-clipboard-pulse me-2"></i>Physical Measurements
+            </h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Height</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" [(ngModel)]="customer.height" [disabled]="!isEditing"
+                    min="100" max="250" step="0.1" (ngModelChange)="calculateBMI()">
+                  <span class="input-group-text">cm</span>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Weight</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" [(ngModel)]="customer.weight" [disabled]="!isEditing"
+                    min="30" max="300" step="0.1" (ngModelChange)="calculateBMI()">
+                  <span class="input-group-text">kg</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info d-flex align-items-center mb-0" *ngIf="bmi">
+              <i class="bi bi-calculator-fill me-3 fs-4"></i>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>Body Mass Index (BMI)</strong>
+                    <div class="small text-muted">{{ bmi | number:'1.1-1' }} kg/m²</div>
+                  </div>
+                  <span class="badge fs-6 px-3 py-2" [ngClass]="getBMIClass()">
+                    {{ getBMICategory() }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="col-12">
-          <button class="btn" [ngClass]="isEditing ? 'btn-success' : 'btn-primary'" (click)="toggleEdit()">
-            {{ isEditing ? 'Save' : 'Edit' }}
-          </button>
+          <div class="row g-3 mt-2">
+            <div class="col-md-4 col-sm-6">
+              <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                  <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ trainingPlans.length }}</div>
+                  <div class="stat-label">Training Plans</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="stat-card">
+                <div class="stat-icon bg-success">
+                  <i class="bi bi-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getTotalExercises() }}</div>
+                  <div class="stat-label">Total Exercises</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                  <i class="bi bi-speedometer2"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ bmi ? (bmi | number:'1.1-1') : '-' }}</div>
+                  <div class="stat-label">BMI Score</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-      <h2 class="mb-0">Training Plans</h2>
-      <button class="btn btn-light" (click)="showNewPlanForm()">Create New Plan</button>
+  <div class="card shadow-sm">
+    <div class="card-header bg-gradient-primary text-white py-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="h5 mb-0">Training Plans
+          <span class="badge bg-light text-primary ms-2">
+            {{ trainingPlans.length }}
+          </span>
+        </h2>
+        <button class="btn btn-light" (click)="showNewPlanForm()" *ngIf="!showNewPlan">Create New Plan</button>
+      </div>
     </div>
-    <div class="card-body">
-      @if (
-      showNewPlan
-      ) {
-      <div class="card mb-4">
-        <div class="card-header bg-secondary text-white">
-          <h3 class="mb-0">New Training Plan</h3>
-        </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <label class="form-label">Plan Name:</label>
-            <input class="form-control" [(ngModel)]="newPlan.planName">
+    <div class="card-body p-4">
+      @if (showNewPlan) {
+      <div class="new-plan-form mb-4">
+        <div class="card border-primary">
+          <div class="card-header bg-primary bg-opacity-10 border-primary">
+            <h3 class="h6 mb-0 text-primary">
+              <i class="bi bi-plus-square me-2"></i>Create New Training Plan
+            </h3>
           </div>
-
-          <div class="mb-4">
-            <h4 class="mb-3">Select Exercises</h4>
-            @for (exercise of exercises; track exercise.id) {
-            <div class="card mb-3">
-              <div class="d-flex align-items-center gap-2 p-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" [checked]="isExerciseSelected(exercise)"
-                    (change)="toggleExercise(exercise)" [id]="'exercise-' + exercise.id">
-                  <label class="form-check-label" [for]="'exercise-' + exercise.id">
-                    {{ exercise.name }}
-                  </label>
-                </div>
+          <div class="card-body">
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Plan Name <span class="text-danger">*</span></label>
+              <input class="form-control form-control-lg" [(ngModel)]="newPlan.planName"
+                placeholder="e.g., Strength Building Program, Cardio Routine..." maxlength="100">
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>Choose a descriptive name for this training plan
               </div>
             </div>
-            }
-          </div>
 
-          <div class="d-flex gap-2">
-            <button class="btn btn-success" (click)="createTrainingPlan()">Save Plan</button>
-            <button class="btn btn-outline-secondary" (click)="cancelNewPlan()">Cancel</button>
-          </div>
-        </div>
-      </div>
-      }
-      <div class="row row-cols-1 row-cols-md-2 g-4">
-        @for (plan of trainingPlans; track plan.id) {
-        <div class="col">
-          <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h3 class="mb-0">{{ plan.planName }}</h3>
-              <button class="btn btn-sm btn-danger" (click)="deleteTrainingPlan(plan.id)">Delete Plan</button>
-            </div>
-            <div class="card-body">
-              <div class="list-group">
-                @for (exercise of plan.exercises; track exercise.id) {
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>{{ exercise.name }}</span>
-                  <div class="d-flex gap-2">
-                    <a *ngIf="exercise.video" [href]="exercise.video" target="_blank"
-                      class="btn btn-sm btn-outline-primary">
-                      Watch Video
-                    </a>
-                    <button class="btn btn-sm btn-danger" (click)="removeExercise(exercise, plan.id)">
-                      Remove
-                    </button>
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="h6 mb-0 fw-semibold">
+                  <i class="bi bi-list-check me-2"></i>Select Exercises
+                  <span class="badge bg-primary ms-2">{{ newPlan.exercises.length }} selected</span>
+                </h4>
+              </div>
+
+              <div class="exercise-list">
+                @if (exercises.length === 0) {
+                <div class="text-center text-muted py-4">
+                  <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                  <p class="mb-0">No exercises available</p>
+                </div>
+                }
+                @for (exercise of exercises; track exercise.id) {
+                <div class="exercise-item" [class.selected]="isExerciseSelected(exercise)">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [checked]="isExerciseSelected(exercise)"
+                      (change)="toggleExercise(exercise)" [id]="'exercise-' + exercise.id">
+                    <label class="form-check-label w-100" [for]="'exercise-' + exercise.id">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                          <strong>{{ exercise.name }}</strong>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                          <a *ngIf="exercise.video" [href]="exercise.video" target="_blank"
+                            class="btn btn-sm btn-outline-primary" (click)="$event.stopPropagation()">
+                            <i class="bi bi-play-circle me-1"></i>Video
+                          </a>
+                        </div>
+                      </div>
+                    </label>
                   </div>
                 </div>
                 }
               </div>
             </div>
+
+            <div class="d-flex gap-2 pt-3 border-top">
+              <button class="btn btn-primary btn-lg" (click)="createTrainingPlan()"
+                [disabled]="!newPlan.planName || newPlan.exercises.length === 0">
+                <i class="bi bi-check-circle me-2"></i>Save Training Plan
+              </button>
+              <button class="btn btn-outline-secondary btn-lg" (click)="cancelNewPlan()">
+                <i class="bi bi-x-circle me-2"></i>Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (!showNewPlan) {
+      @if (trainingPlans.length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="bi bi-clipboard2-x display-1 text-muted mb-3"></i>
+        <h3 class="h5 text-muted mb-2">No Training Plans Yet</h3>
+        <p class="text-muted mb-4">Create a personalized training plan to get started</p>
+        <button class="btn btn-primary" (click)="showNewPlanForm()">
+          <i class="bi bi-plus-circle me-2"></i>Create Your First Plan
+        </button>
+      </div>
+      } @else {
+      <div class="row row-cols-1 row-cols-lg-2 g-4">
+        @for (plan of trainingPlans; track plan.id) {
+        <div class="col">
+          <div class="plan-card">
+            <div class="plan-header">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h3 class="h5 mb-1">{{ plan.planName }}</h3>
+                  <p class="text-muted small mb-0">
+                    <i class="bi bi-list-check me-1"></i>
+                    {{ plan.exercises.length }} exercise{{ plan.exercises.length !== 1 ? 's' : '' }}
+                  </p>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteTrainingPlan(plan.id)" title="Delete plan">
+                  Delete
+                </button>
+              </div>
+            </div>
+            <div class="plan-body">
+              @if (plan.exercises.length === 0) {
+              <div class="text-center text-muted py-3">
+                <i class="bi bi-inbox"></i> No exercises in this plan
+              </div>
+              } @else {
+              <div class="exercise-list-compact">
+                @for (exercise of plan.exercises; track exercise.id; let idx = $index) {
+                <div class="exercise-item-compact">
+                  <div class="exercise-number">{{ idx + 1 }}</div>
+                  <div class="exercise-details">
+                    <div class="exercise-name">{{ exercise.name }}</div>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <a *ngIf="exercise.video" [href]="exercise.video" target="_blank"
+                      class="btn btn-sm btn-outline-primary" title="Watch video">
+                      Video
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" (click)="removeExercise(exercise, plan.id)"
+                      title="Remove exercise">Delete</button>
+                  </div>
+                </div>
+                }
+              </div>
+              }
+            </div>
           </div>
         </div>
         }
       </div>
+      }}
     </div>
   </div>
 </div>
