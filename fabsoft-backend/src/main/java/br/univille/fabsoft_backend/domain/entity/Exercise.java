@@ -16,5 +16,4 @@ public class Exercise {
   private Long id;
   private String name;
   private String video;
-  private String thumbnail;
 }

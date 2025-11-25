@@ -3,6 +3,7 @@ package br.univille.fabsoft_backend.domain.entity;
 import java.util.List;
 
 import br.univille.fabsoft_backend.domain.enums.ExerciseDays;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,6 +28,7 @@ public class Customer {
     private String gender;
     
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)  // Explicitly tells JPA this column can be null
     private ExerciseDays exerciseDays;
     
     @OneToMany(mappedBy = "customer")

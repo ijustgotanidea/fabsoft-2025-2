@@ -1,0 +1,194 @@
+<main class="container py-4" *ngIf="isAuthenticated">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">
+      <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
+    </h1>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" routerLink="/customers">
+        <i class="bi bi-arrow-left me-2"></i>Back to List
+      </button>
+      <button class="btn btn-outline-danger" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </button>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white py-3">
+          <h2 class="card-title h4 mb-0">
+            <i class="bi bi-person-plus-fill me-2"></i>New Customer Registration
+          </h2>
+          <p class="mb-0 small opacity-75">Complete the form below to register a new customer</p>
+        </div>
+        <div class="card-body p-4">
+          <form (ngSubmit)="saveCustomer()" #customerForm="ngForm">
+            <!-- Personal Information Section -->
+            <div class="section-header mb-3">
+              <h5 class="text-primary border-bottom pb-2">
+                <i class="bi bi-person-circle me-2"></i>Personal Information
+              </h5>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label for="name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" [(ngModel)]="customer.name" name="name" required
+                  minlength="3" maxlength="100" placeholder="Enter customer's full name" #name="ngModel"
+                  [class.is-invalid]="name.invalid && (name.dirty || name.touched)"
+                  [class.is-valid]="name.valid && (name.dirty || name.touched)">
+                <div class="invalid-feedback" *ngIf="name.invalid && (name.dirty || name.touched)">
+                  <span *ngIf="name.errors?.['required']">Full name is required</span>
+                  <span *ngIf="name.errors?.['minlength']">Name must be at least 3 characters</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="age" class="form-label fw-semibold">Age <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="age" [(ngModel)]="customer.age" name="age" required
+                  min="12" max="120" placeholder="Age" #age="ngModel"
+                  [class.is-invalid]="age.invalid && (age.dirty || age.touched)"
+                  [class.is-valid]="age.valid && (age.dirty || age.touched)">
+                <div class="invalid-feedback" *ngIf="age.invalid && (age.dirty || age.touched)">
+                  <span *ngIf="age.errors?.['required']">Age is required</span>
+                  <span *ngIf="age.errors?.['min']">Minimum age is 12</span>
+                  <span *ngIf="age.errors?.['max']">Please enter a valid age</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="gender" class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
+              <select class="form-select" id="gender" [(ngModel)]="customer.gender" name="gender" required
+                #gender="ngModel" [class.is-invalid]="gender.invalid && (gender.dirty || gender.touched)"
+                [class.is-valid]="gender.valid && (gender.dirty || gender.touched)">
+                <option value="" disabled selected>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="gender.invalid && (gender.dirty || gender.touched)">
+                Please select a gender
+              </div>
+            </div>
+
+            <!-- Physical Measurements Section -->
+            <div class="section-header mb-3 mt-4">
+              <h5 class="text-primary border-bottom pb-2">
+                <i class="bi bi-clipboard-data me-2"></i>Physical Measurements
+              </h5>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="height" class="form-label fw-semibold">Height (cm) <span
+                    class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="height" [(ngModel)]="customer.height" name="height"
+                    required min="100" max="250" step="0.1" placeholder="e.g., 175" (ngModelChange)="calculateBMI()"
+                    #height="ngModel" [class.is-invalid]="height.invalid && (height.dirty || height.touched)"
+                    [class.is-valid]="height.valid && (height.dirty || height.touched)">
+                  <span class="input-group-text">cm</span>
+                </div>
+                <div class="invalid-feedback d-block" *ngIf="height.invalid && (height.dirty || height.touched)">
+                  <span *ngIf="height.errors?.['required']">Height is required</span>
+                  <span *ngIf="height.errors?.['min']">Height must be at least 100 cm</span>
+                  <span *ngIf="height.errors?.['max']">Height must be less than 250 cm</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="weight" class="form-label fw-semibold">Weight (kg) <span
+                    class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="weight" [(ngModel)]="customer.weight" name="weight"
+                    required min="30" max="300" step="0.1" placeholder="e.g., 70" (ngModelChange)="calculateBMI()"
+                    #weight="ngModel" [class.is-invalid]="weight.invalid && (weight.dirty || weight.touched)"
+                    [class.is-valid]="weight.valid && (weight.dirty || weight.touched)">
+                  <span class="input-group-text">kg</span>
+                </div>
+                <div class="invalid-feedback d-block" *ngIf="weight.invalid && (weight.dirty || weight.touched)">
+                  <span *ngIf="weight.errors?.['required']">Weight is required</span>
+                  <span *ngIf="weight.errors?.['min']">Weight must be at least 30 kg</span>
+                  <span *ngIf="weight.errors?.['max']">Weight must be less than 300 kg</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BMI Display -->
+            <div class="alert alert-info mb-3" *ngIf="bmi && customer.weight && customer.height">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-calculator me-2"></i>
+                <div>
+                  <strong>BMI:</strong> {{ bmi | number:'1.1-1' }}
+                  <span class="badge" [ngClass]="getBMIClass()">{{ getBMICategory() }}</span>
+                  <div class="small text-muted mt-1">Body Mass Index is calculated as weight(kg) / height(m)²</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Training Plan Section -->
+            <div class="section-header mb-3 mt-4">
+              <h5 class="text-primary border-bottom pb-2">
+                <i class="bi bi-calendar-week me-2"></i>Training Schedule
+              </h5>
+            </div>
+
+            <div class="mb-3">
+              <label for="exerciseDays" class="form-label fw-semibold">Training Days per Week <span
+                  class="text-danger">*</span></label>
+              <select class="form-select" id="exerciseDays" [(ngModel)]="customer.exerciseDays" name="exerciseDays"
+                required #exerciseDays="ngModel"
+                [class.is-invalid]="exerciseDays.invalid && (exerciseDays.dirty || exerciseDays.touched)"
+                [class.is-valid]="exerciseDays.valid && (exerciseDays.dirty || exerciseDays.touched)">
+                <option value="" disabled selected>Select training frequency</option>
+                <option value="THREE_DAYS">3 Days per Week - Beginner Program</option>
+                <option value="FOUR_DAYS">4 Days per Week - Intermediate Program</option>
+                <option value="FIVE_DAYS">5 Days per Week - Advanced Program</option>
+                <option value="MORE_THAN_FIVE">More than 5 Days - Elite Program</option>
+              </select>
+              <div class="form-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Choose a training frequency based on the customer's goals and availability
+              </div>
+              <div class="invalid-feedback"
+                *ngIf="exerciseDays.invalid && (exerciseDays.dirty || exerciseDays.touched)">
+                Please select training frequency
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+              <button type="submit" class="btn btn-primary btn-lg flex-grow-1"
+                [disabled]="!customerForm.form.valid || isSubmitting">
+                <i class="bi bi-check-circle me-2"></i>
+                <span *ngIf="!isSubmitting">Register Customer</span>
+                <span *ngIf="isSubmitting">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Registering...
+                </span>
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-lg" (click)="cancelForm()"
+                [disabled]="isSubmitting">
+                <i class="bi bi-x-circle me-2"></i>Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Help Card -->
+      <div class="card mt-3 border-0 bg-light">
+        <div class="card-body">
+          <h6 class="text-muted mb-2">
+            <i class="bi bi-lightbulb me-2"></i>Registration Tips
+          </h6>
+          <ul class="small text-muted mb-0">
+            <li>Ensure all measurements are accurate for optimal training plan creation</li>
+            <li>BMI is calculated automatically to help assess the customer's fitness level</li>
+            <li>Training frequency should match the customer's goals and schedule availability</li>
+            <li>All fields marked with <span class="text-danger">*</span> are required</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

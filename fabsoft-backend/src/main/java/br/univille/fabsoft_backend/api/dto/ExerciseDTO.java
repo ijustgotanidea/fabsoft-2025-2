@@ -7,5 +7,4 @@ public class ExerciseDTO {
     private Long id;
     private String name;
     private String video;
-    private String thumbnail;
 }
