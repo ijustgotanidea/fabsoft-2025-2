@@ -96,7 +96,6 @@ Content-Type: application/json
 {
   "name": "Agachamentos",
   "video": "https://example.com/videos/agachamentos.mp4",
-  "thumbnail": "https://example.com/thumbnails/agachamentos.jpg"
 }
 
 ###
@@ -108,7 +107,6 @@ Content-Type: application/json
 {
   "name": "Biceps Curls",
   "video": "https://example.com/videos/biceps-curls.mp4",
-  "thumbnail": "https://example.com/thumbnails/biceps-curls.jpg"
 }
 
 ###
@@ -120,7 +118,6 @@ Content-Type: application/json
 {
   "name": "Biceps na polia",
   "video": "https://example.com/videos/biceps-na-polia.mp4",
-  "thumbnail": "https://example.com/thumbnails/biceps-na-polia.jpg"
 }
 
 ###

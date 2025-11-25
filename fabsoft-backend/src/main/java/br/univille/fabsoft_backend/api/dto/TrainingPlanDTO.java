@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class TrainingPlanDTO {
+    private Long id;
     private Long customerId;
     private String planName;
     private List<ExerciseDTO> exercises;

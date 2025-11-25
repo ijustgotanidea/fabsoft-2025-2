@@ -2,15 +2,22 @@ package br.univille.fabsoft_backend.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import br.univille.fabsoft_backend.api.dto.CustomerDTO;
 import br.univille.fabsoft_backend.api.dto.ExerciseDTO;
 import br.univille.fabsoft_backend.api.dto.TrainingPlanDTO;
+import br.univille.fabsoft_backend.domain.entity.Customer;
+import br.univille.fabsoft_backend.domain.entity.Exercise;
+import br.univille.fabsoft_backend.domain.entity.TrainingPlan;
 import br.univille.fabsoft_backend.domain.enums.ExerciseDays;
+import br.univille.fabsoft_backend.repository.CustomerRepository;
+import br.univille.fabsoft_backend.repository.ExerciseRepository;
+import br.univille.fabsoft_backend.repository.TrainingPlanRepository;
 import br.univille.fabsoft_backend.service.CustomerService;
 import br.univille.fabsoft_backend.service.ExerciseService;
 import br.univille.fabsoft_backend.service.TrainingPlanService;
@@ -24,126 +31,123 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
     @Autowired
     private ExerciseService exerciseService;
     
-    private final Random random = new Random();
+    @Autowired
+    private TrainingPlanRepository trainingPlanRepository;
+    
+    @Autowired
+    private CustomerRepository customerRepository;
+    
+    @Autowired
+    private ExerciseRepository exerciseRepository;
 
     @Override
-    public TrainingPlanDTO generateTrainingPlan(Long customerId) {
-        CustomerDTO customerDTO = customerService.getById(customerId);
-        if (customerDTO == null) {
+    public TrainingPlanDTO[] getAllTrainingPlansByCustomerId(Long customerId) {
+        List<TrainingPlan> history = trainingPlanRepository.findAllByCustomerId(customerId);
+        return history.stream()
+            .map(this::convertToDTO)
+            .toArray(TrainingPlanDTO[]::new);
+    }
+
+    @Override
+    @Transactional
+    public TrainingPlanDTO createTrainingPlan(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+            .orElse(null);
+        if (customer == null) {
             return null;
         }
-        
-        TrainingPlanDTO trainingPlan = new TrainingPlanDTO();
-        trainingPlan.setCustomerId(customerId);
-        
-        int exercisesPerDay = determineExercisesPerDay(customerDTO.getExerciseDays());
-        
-        List<ExerciseDTO> allExercises = exerciseService.getAll();
-        if (allExercises.isEmpty()) {
-            createSampleExercises();
-            allExercises = exerciseService.getAll();
-        }
-        
-        List<ExerciseDTO> selectedExercises = selectExercises(allExercises, exercisesPerDay);
-        
-        String planName = generatePlanName(customerDTO);
-        
-        trainingPlan.setPlanName(planName);
-        trainingPlan.setExercises(selectedExercises);
-        
-        return trainingPlan;
+
+        TrainingPlan plan = new TrainingPlan();
+        plan.setCustomer(customer);
+        plan.setPlanName("New Training Plan");
+        plan.setExercises(new ArrayList<>());
+        trainingPlanRepository.save(plan);
+        return convertToDTO(plan);
     }
-    
-    private int determineExercisesPerDay(ExerciseDays days) {
-        return switch (days) {
-            case THREE_DAYS -> 5;
-            case FOUR_DAYS -> 4;
-            case FIVE_DAYS -> 3;
-            default -> 3;
-        };
-    }
-    
-    private List<ExerciseDTO> selectExercises(List<ExerciseDTO> allExercises, int count) {
-        if (allExercises.size() <= count) {
-            return new ArrayList<>(allExercises);
+
+    @Override
+    @Transactional
+    public TrainingPlanDTO createTrainingPlan(Long customerId, TrainingPlanDTO trainingPlanDTO) {
+        Customer customer = customerRepository.findById(customerId)
+            .orElse(null);
+        if (customer == null) {
+            return null;
         }
-        
-        List<ExerciseDTO> selectedExercises = new ArrayList<>();
-        List<Integer> selectedIndices = new ArrayList<>();
-        
-        while (selectedExercises.size() < count) {
-            int index = random.nextInt(allExercises.size());
-            if (!selectedIndices.contains(index)) {
-                selectedIndices.add(index);
-                selectedExercises.add(allExercises.get(index));
+
+        TrainingPlan plan = new TrainingPlan();
+        plan.setCustomer(customer);
+        plan.setPlanName(trainingPlanDTO != null ? trainingPlanDTO.getPlanName() : "New Training Plan");
+        plan.setExercises(new ArrayList<>());
+        trainingPlanRepository.save(plan);
+        return convertToDTO(plan);
+    }
+
+    @Override
+    @Transactional
+    public TrainingPlanDTO addExercisesToPlan(Long planId, Long[] exerciseIds) {
+        TrainingPlan plan = trainingPlanRepository.findById(planId).orElse(null);
+        if (plan == null) {
+            return null;
+        }
+
+        List<Exercise> exercisesToAdd = new ArrayList<>();
+        for (Long exerciseId : exerciseIds) {
+            Exercise exercise = exerciseRepository.findById(exerciseId).orElse(null);
+            if (exercise != null) {
+                exercisesToAdd.add(exercise);
             }
         }
-        
-        return selectedExercises;
+        plan.getExercises().addAll(exercisesToAdd);
+        trainingPlanRepository.save(plan);
+        return convertToDTO(plan);
     }
-    
-    private String generatePlanName(CustomerDTO customer) {
-        String intensity;
-        
-        if (customer.getAge() < 30) {
-            intensity = "Alta Intensidade";
-        } else if (customer.getAge() < 50) {
-            intensity = "Média Intensidade";
-        } else {
-            intensity = "Baixa Intensidade";
-        }
-        
-        String focus;
-        if ("M".equalsIgnoreCase(customer.getGender())) {
-            focus = "Hipertrofia";
-        } else {
-            focus = "Tonificação";
-        }
-        
-        return "Plano de " + focus + " - " + intensity;
+
+    @Override
+    public TrainingPlanDTO getTrainingPlan(Long planId) {
+        TrainingPlan plan = trainingPlanRepository.findById(planId).orElse(null);
+        return plan != null ? convertToDTO(plan) : null;
     }
-    
-    private void createSampleExercises() {
-        List<ExerciseDTO> sampleExercises = new ArrayList<>();
-        
-        ExerciseDTO ex1 = new ExerciseDTO();
-        ex1.setName("Supino Reto");
-        ex1.setVideo("https://example.com/videos/supino_reto.mp4");
-        ex1.setThumbnail("https://example.com/thumbnails/supino_reto.jpg");
-        sampleExercises.add(ex1);
-        
-        ExerciseDTO ex2 = new ExerciseDTO();
-        ex2.setName("Agachamento");
-        ex2.setVideo("https://example.com/videos/agachamento.mp4");
-        ex2.setThumbnail("https://example.com/thumbnails/agachamento.jpg");
-        sampleExercises.add(ex2);
-        
-        ExerciseDTO ex3 = new ExerciseDTO();
-        ex3.setName("Levantamento Terra");
-        ex3.setVideo("https://example.com/videos/levantamento_terra.mp4");
-        ex3.setThumbnail("https://example.com/thumbnails/levantamento_terra.jpg");
-        sampleExercises.add(ex3);
-        
-        ExerciseDTO ex4 = new ExerciseDTO();
-        ex4.setName("Desenvolvimento de Ombros");
-        ex4.setVideo("https://example.com/videos/desenvolvimento.mp4");
-        ex4.setThumbnail("https://example.com/thumbnails/desenvolvimento.jpg");
-        sampleExercises.add(ex4);
-        
-        ExerciseDTO ex5 = new ExerciseDTO();
-        ex5.setName("Rosca Direta");
-        ex5.setVideo("https://example.com/videos/rosca_direta.mp4");
-        ex5.setThumbnail("https://example.com/thumbnails/rosca_direta.jpg");
-        sampleExercises.add(ex5);
-        
-        ExerciseDTO ex6 = new ExerciseDTO();
-        ex6.setName("Tríceps Pulley");
-        ex6.setVideo("https://example.com/videos/triceps_pulley.mp4");
-        ex6.setThumbnail("https://example.com/thumbnails/triceps_pulley.jpg");
-        sampleExercises.add(ex6);
-        
-        for (ExerciseDTO exercise : sampleExercises) {
-            exerciseService.save(exercise);
+
+    @Override
+    @Transactional
+    public void deletePlan(Long planId) {
+        trainingPlanRepository.deleteById(planId);
+    }
+
+    @Override
+    @Transactional
+    public void removeExerciseFromPlan(Long planId, Long exerciseId) {
+        TrainingPlan plan = trainingPlanRepository.findById(planId).orElse(null);
+
+        if (plan != null && plan.getExercises() != null) {
+            plan.setExercises(plan.getExercises().stream()
+                .filter(exercise -> !exercise.getId().equals(exerciseId))
+                .collect(Collectors.toList()));
+            trainingPlanRepository.save(plan);
         }
+    }
+
+    private TrainingPlanDTO convertToDTO(TrainingPlan plan) {
+        TrainingPlanDTO dto = new TrainingPlanDTO();
+        dto.setId(plan.getId());
+        dto.setCustomerId(plan.getCustomer().getId());
+        dto.setPlanName(plan.getPlanName());
+        dto.setExercises(plan.getExercises().stream()
+            .map(exercise -> {
+                ExerciseDTO exerciseDTO = new ExerciseDTO();
+                BeanUtils.copyProperties(exercise, exerciseDTO);
+                return exerciseDTO;
+            })
+            .collect(Collectors.toList()));
+        return dto;
+    }
+
+    private int getExercisesPerDay(ExerciseDays exerciseDays) {
+        return switch (exerciseDays) {
+            case THREE_DAYS -> 6;
+            case FOUR_DAYS -> 5;
+            case FIVE_DAYS -> 4;
+            case MORE_THAN_FIVE -> 3;
+        };
     }
 }

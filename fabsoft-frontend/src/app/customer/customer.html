@@ -1,0 +1,113 @@
+<div class="container mt-4">
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">Customer Information</h2>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Name:</label>
+            <input class="form-control" [(ngModel)]="customer.name" [disabled]="!isEditing">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Age:</label>
+            <input type="number" class="form-control" [(ngModel)]="customer.age" name="age" [disabled]="!isEditing"
+              min="0">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Weight (kg):</label>
+            <input type="number" class="form-control" [(ngModel)]="customer.weight" name="weight"
+              [disabled]="!isEditing" min="0" step="0.1">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Height (cm):</label>
+            <input type="number" class="form-control" [(ngModel)]="customer.height" name="height"
+              [disabled]="!isEditing" min="0" step="0.1">
+          </div>
+        </div>
+        <div class="col-12">
+          <button class="btn" [ngClass]="isEditing ? 'btn-success' : 'btn-primary'" (click)="toggleEdit()">
+            {{ isEditing ? 'Save' : 'Edit' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">Training Plans</h2>
+      <button class="btn btn-light" (click)="showNewPlanForm()">Create New Plan</button>
+    </div>
+    <div class="card-body">
+      @if (
+      showNewPlan
+      ) {
+      <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h3 class="mb-0">New Training Plan</h3>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Plan Name:</label>
+            <input class="form-control" [(ngModel)]="newPlan.planName">
+          </div>
+
+          <div class="mb-4">
+            <h4 class="mb-3">Select Exercises</h4>
+            @for (exercise of exercises; track exercise.id) {
+            <div class="card mb-3">
+              <div class="d-flex align-items-center gap-2 p-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" [checked]="isExerciseSelected(exercise)"
+                    (change)="toggleExercise(exercise)" [id]="'exercise-' + exercise.id">
+                  <label class="form-check-label" [for]="'exercise-' + exercise.id">
+                    {{ exercise.name }}
+                  </label>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-success" (click)="createTrainingPlan()">Save Plan</button>
+            <button class="btn btn-outline-secondary" (click)="cancelNewPlan()">Cancel</button>
+          </div>
+        </div>
+      </div>
+      }
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        @for (plan of trainingPlans; track plan.id) {
+        <div class="col">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h3 class="mb-0">{{ plan.planName }}</h3>
+              <button class="btn btn-sm btn-danger" (click)="deleteTrainingPlan(plan.id)">Delete Plan</button>
+            </div>
+            <div class="card-body">
+              <div class="list-group">
+                @for (exercise of plan.exercises; track exercise.id) {
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>{{ exercise.name }}</span>
+                  <div class="d-flex gap-2">
+                    <a *ngIf="exercise.video" [href]="exercise.video" target="_blank"
+                      class="btn btn-sm btn-outline-primary">
+                      Watch Video
+                    </a>
+                    <button class="btn btn-sm btn-danger" (click)="removeExercise(exercise, plan.id)">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

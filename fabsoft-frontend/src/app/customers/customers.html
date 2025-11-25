@@ -1,0 +1,31 @@
+<main class="container mt-5">
+  <h2 class="mb-4">Customer List</h2>
+  <button class="btn btn-primary mb-3" (click)="addCustomer()">Add Customer</button>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Weight</th>
+        <th>Height</th>
+        <th>Gender</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (customer of customerList; track customer) {
+      <tr>
+        <td>{{customer.name}}</td>
+        <td>{{customer.age}}</td>
+        <td>{{customer.weight}}</td>
+        <td>{{customer.height}}</td>
+        <td>{{customer.gender}}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" (click)="editCustomer(customer.id)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteCustomer(customer.id)">Delete</button>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</main>
