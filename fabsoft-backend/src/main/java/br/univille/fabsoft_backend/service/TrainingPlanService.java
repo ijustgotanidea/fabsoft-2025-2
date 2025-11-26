@@ -10,4 +10,6 @@ public interface TrainingPlanService {
     TrainingPlanDTO getTrainingPlan(Long planId);
     void deletePlan(Long planId);
     void removeExerciseFromPlan(Long planId, Long exerciseId);
+    String generateShareLink(Long planId);
+    TrainingPlanDTO getTrainingPlanByShareToken(String shareToken);
 }

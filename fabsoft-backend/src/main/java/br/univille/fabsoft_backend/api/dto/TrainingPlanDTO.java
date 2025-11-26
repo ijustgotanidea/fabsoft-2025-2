@@ -9,5 +9,6 @@ public class TrainingPlanDTO {
     private Long id;
     private Long customerId;
     private String planName;
+    private String shareToken;
     private List<ExerciseDTO> exercises;
 }

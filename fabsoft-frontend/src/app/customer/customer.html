@@ -262,9 +262,15 @@
                     {{ plan.exercises.length }} exercise{{ plan.exercises.length !== 1 ? 's' : '' }}
                   </p>
                 </div>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteTrainingPlan(plan.id)" title="Delete plan">
-                  Delete
-                </button>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-success" (click)="shareTrainingPlan(plan)" title="Share plan">
+                    <i class="bi bi-share-fill me-1"></i>Share
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTrainingPlan(plan.id)"
+                    title="Delete plan">
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
             <div class="plan-body">

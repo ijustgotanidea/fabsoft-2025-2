@@ -7,6 +7,7 @@ import { NewTrainingPlan, TrainingPlanModel } from '../model/training-plan';
 })
 export class TrainingPlanService {
   private API_URL = import.meta.env['NG_APP_API_URL'] + '/training-plans';
+  private PUBLIC_URL = import.meta.env['NG_APP_API_URL'] + '/public/training-plans';
 
   constructor(private http: HttpClient) { }
 
@@ -28,5 +29,13 @@ export class TrainingPlanService {
 
   removeExerciseFromPlan(planId: number, exerciseId: number) {
     return this.http.delete(`${this.API_URL}/plan/${planId}/exercises/${exerciseId}`);
+  }
+
+  generateShareLink(planId: number) {
+    return this.http.post<string>(`${this.API_URL}/plan/${planId}/generate-share-link`, null, { responseType: 'text' as 'json' });
+  }
+
+  getTrainingPlanByShareToken(token: string) {
+    return this.http.get<TrainingPlanModel>(`${this.PUBLIC_URL}/share/${token}`);
   }
 }

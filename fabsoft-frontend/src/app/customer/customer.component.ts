@@ -235,6 +235,27 @@ export class CustomerComponent implements OnInit {
     });
   }
 
+  shareTrainingPlan(plan: TrainingPlanModel): void {
+    this.trainingPlanService.generateShareLink(plan.id).subscribe({
+      next: (token) => {
+        const shareUrl = `${window.location.origin}/share/training-plan/${token}`;
+
+        // Copiar para clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert(`Link compartilhável copiado!\n\n${shareUrl}\n\nO link foi copiado para a área de transferência. Compartilhe este link para permitir visualização do plano de treino.`);
+        }).catch(err => {
+          // Fallback se clipboard API falhar
+          console.error('Error copying to clipboard:', err);
+          prompt('Copie o link abaixo:', shareUrl);
+        });
+      },
+      error: (error) => {
+        console.error('Error generating share link:', error);
+        alert('Erro ao gerar link compartilhável. Tente novamente.');
+      }
+    });
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);

@@ -73,4 +73,13 @@ public class TrainingPlanController {
         trainingPlanService.removeExerciseFromPlan(planId, exerciseId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @PostMapping("/plan/{planId}/generate-share-link")
+    public ResponseEntity<String> generateShareLink(@PathVariable("planId") Long planId) {
+        String token = trainingPlanService.generateShareLink(planId);
+        if (token != null) {
+            return new ResponseEntity<>(token, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 }

@@ -2,6 +2,7 @@ package br.univille.fabsoft_backend.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -145,6 +146,7 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
         dto.setId(plan.getId());
         dto.setCustomerId(plan.getCustomer().getId());
         dto.setPlanName(plan.getPlanName());
+        dto.setShareToken(plan.getShareToken());
         dto.setExercises(plan.getExercises().stream()
             .map(exercise -> {
                 ExerciseDTO exerciseDTO = new ExerciseDTO();
@@ -153,6 +155,29 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
             })
             .collect(Collectors.toList()));
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public String generateShareLink(Long planId) {
+        TrainingPlan plan = trainingPlanRepository.findById(planId).orElse(null);
+        if (plan == null) {
+            return null;
+        }
+        
+        if (plan.getShareToken() == null || plan.getShareToken().isEmpty()) {
+            String token = UUID.randomUUID().toString();
+            plan.setShareToken(token);
+            trainingPlanRepository.save(plan);
+        }
+        
+        return plan.getShareToken();
+    }
+
+    @Override
+    public TrainingPlanDTO getTrainingPlanByShareToken(String shareToken) {
+        TrainingPlan plan = trainingPlanRepository.findByShareToken(shareToken).orElse(null);
+        return plan != null ? convertToDTO(plan) : null;
     }
 
     private int getExercisesPerDay(ExerciseDays exerciseDays) {

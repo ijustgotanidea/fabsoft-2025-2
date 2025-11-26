@@ -23,6 +23,8 @@ public class TrainingPlan {
     
     private String planName;
     
+    private String shareToken;
+    
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;

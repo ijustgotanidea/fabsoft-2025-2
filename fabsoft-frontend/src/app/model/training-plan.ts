@@ -11,6 +11,7 @@ export interface NewTrainingPlan {
 export class TrainingPlanModel {
   id!: number;
   planName!: string;
+  shareToken?: string;
   customer!: CustomerModel;
   exercises!: ExerciseModel[];
 }

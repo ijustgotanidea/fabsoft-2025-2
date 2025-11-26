@@ -1,0 +1,98 @@
+<div class="shared-plan-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Carregando plano de treino...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>Plano não encontrado</strong>
+      <p class="mb-0 mt-2">O link compartilhado não é válido ou o plano foi removido.</p>
+    </div>
+  </div>
+
+  <!-- Training Plan Content -->
+  <div *ngIf="trainingPlan && !loading && !error" class="plan-content">
+    <!-- Header -->
+    <div class="plan-header">
+      <div class="d-flex align-items-center mb-2">
+        <i class="bi bi-clipboard-check text-primary display-6 me-3"></i>
+        <h1 class="display-5 mb-0">{{ trainingPlan.planName }}</h1>
+      </div>
+      <p class="text-muted">
+        <i class="bi bi-share-fill me-2"></i>
+        Plano de Treino Compartilhado - Visualização
+      </p>
+    </div>
+
+    <!-- Plan Info Card -->
+    <div class="card plan-info-card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5 class="card-title">
+              <i class="bi bi-info-circle text-primary me-2"></i>
+              Informações do Plano
+            </h5>
+            <p class="mb-1">
+              <strong>Nome:</strong> {{ trainingPlan.planName }}
+            </p>
+            <p class="mb-0">
+              <strong>Total de Exercícios:</strong>
+              <span class="badge bg-primary ms-2">{{ trainingPlan.exercises.length || 0 }}</span>
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <div class="share-badge">
+              <i class="bi bi-shield-check text-success me-2"></i>
+              <span>Modo Somente Leitura</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercises List -->
+    <div class="exercises-section">
+      <h4 class="mb-4">
+        <i class="bi bi-list-ol text-primary me-2"></i>
+        Exercícios do Plano
+      </h4>
+
+      <div *ngIf="trainingPlan.exercises && trainingPlan.exercises.length > 0" class="exercises-list">
+        <div *ngFor="let exercise of trainingPlan.exercises; let i = index" class="exercise-card">
+          <div class="exercise-number">{{ i + 1 }}</div>
+          <div class="exercise-details">
+            <h5 class="exercise-name">{{ exercise.name }}</h5>
+            <div class="exercise-meta">
+              <a *ngIf="exercise.video" [href]="exercise.video" target="_blank" class="btn btn-sm btn-light">
+                <i class="bi bi-play-circle-fill me-1"></i>
+                Assistir Vídeo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!trainingPlan.exercises || trainingPlan.exercises.length === 0" class="empty-state">
+        <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum exercício neste plano</h5>
+        <p class="text-muted">Este plano ainda não possui exercícios cadastrados.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="plan-footer mt-5">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Esta é uma visualização compartilhada do plano de treino. Para editar ou criar seus próprios planos, entre em
+        contato com a academia.
+      </div>
+    </div>
+  </div>
+</div>
