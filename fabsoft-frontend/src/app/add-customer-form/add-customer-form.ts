@@ -5,14 +5,15 @@ import { AuthService } from '../service/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-add-customer-form',
-  imports: [HttpClientModule, CommonModule, FormsModule],
+  imports: [HttpClientModule, CommonModule, FormsModule, RouterLink],
   templateUrl: './add-customer-form.html',
   styleUrl: './add-customer-form.css',
-  providers: [CustomerService, Router]
+  providers: [CustomerService, Router],
+  standalone: true
 })
 
 export class AddCustomerFormComponent {

@@ -3,7 +3,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../service/customer.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CustomerModel } from '../model/customer';
 import { NewTrainingPlan, TrainingPlanModel } from '../model/training-plan';
 import { TrainingPlanService } from '../service/training-plan.service';
@@ -13,7 +13,7 @@ import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-customer',
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, HttpClientModule, FormsModule, RouterLink],
   templateUrl: './customer.html',
   styleUrl: './customer.css',
   providers: [CustomerService, TrainingPlanService, ExerciseService],
