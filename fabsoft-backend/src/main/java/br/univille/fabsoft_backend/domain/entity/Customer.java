@@ -3,6 +3,7 @@ package br.univille.fabsoft_backend.domain.entity;
 import java.util.List;
 
 import br.univille.fabsoft_backend.domain.enums.ExerciseDays;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,6 +32,9 @@ public class Customer {
     @Column(nullable = true)  // Explicitly tells JPA this column can be null
     private ExerciseDays exerciseDays;
     
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TrainingPlan> trainingPlans;
+    
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExecutedExercise> executedExercises;
 }
